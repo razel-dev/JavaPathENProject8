@@ -54,6 +54,15 @@ public class RewardsService {
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return getDistance(attraction, location) > attractionProximityRange ? false : true;
 	}
+
+	// Fournit les N attractions les plus proches d'une position donnée, triées par distance ascendante,
+	// sans utiliser de rayon arbitraire.
+	public List<Attraction> getClosestAttractions(Location from, int limit) {
+		return gpsUtil.getAttractions().stream()
+				.sorted((a1, a2) -> Double.compare(getDistance(a1, from), getDistance(a2, from)))
+				.limit(limit)
+				.toList();
+	}
 	
 	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
 		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;

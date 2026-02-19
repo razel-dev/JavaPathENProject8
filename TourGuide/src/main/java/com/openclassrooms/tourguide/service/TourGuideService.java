@@ -96,20 +96,8 @@ public class TourGuideService {
 	}
 
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
-		for (Attraction attraction : gpsUtil.getAttractions()) {
-            // Problème: on filtre par "proximité" via un rayon fixe (200 miles par défaut defini dans le RewardsService utilisé par isWithinAttractionProximity(...) pour décider si une attraction est « proche » d’une position donnée.)
-            // au lieu de trier toutes les attractions par distance et de retourner
-            // systématiquement les 5 plus proches (quelle que soit la distance)....
-
-            if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
-			}
-		}
-
-		// Conséquence: la taille de la liste varie selon la position de l'utilisateur,
-		// elle n'est pas garantie à 5 éléments et n'est pas triée par distance croissante.
-		return nearbyAttractions;
+		// Découplage du rayon: renvoie toujours les 5 plus proches par distance
+		return rewardsService.getClosestAttractions(visitedLocation.location, 5);
 	}
 
 	private void addShutDownHook() {
