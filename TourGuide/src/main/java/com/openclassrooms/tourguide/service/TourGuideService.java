@@ -100,7 +100,7 @@ public class TourGuideService {
 		for (Attraction attraction : gpsUtil.getAttractions()) {
             // Problème: on filtre par "proximité" via un rayon fixe (200 miles par défaut defini dans le RewardsService utilisé par isWithinAttractionProximity(...) pour décider si une attraction est « proche » d’une position donnée.)
             // au lieu de trier toutes les attractions par distance et de retourner
-            // systématiquement les 5 plus proches (quelle que soit la distance).
+            // systématiquement les 5 plus proches (quelle que soit la distance)....
 
             if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
 				nearbyAttractions.add(attraction);
