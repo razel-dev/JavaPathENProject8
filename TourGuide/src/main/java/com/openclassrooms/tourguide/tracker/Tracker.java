@@ -24,22 +24,13 @@ public class Tracker implements Runnable {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final TourGuideService tourGuideService;
 
-
     public void start() {
         scheduler.scheduleWithFixedDelay(
-                this,
+                this, // instance de runnable
                 0,
                 TRACKING_POLLING_INTERVAL_SECONDS,
                 TimeUnit.SECONDS
         );
-    }
-
-    /**
-     * Arrête proprement le scheduler du Tracker.
-     */
-    public void stopTracking() {
-        log.debug("Arrêt du Tracker");
-        scheduler.shutdownNow();
     }
 
     @Override
@@ -60,5 +51,13 @@ public class Tracker implements Runnable {
             log.debug("Temps écoulé du cycle du Tracker: {} secondes.",
                     TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
         }
+    }
+
+    /**
+     * Arrête proprement le scheduler du Tracker.
+     */
+    public void stopTracking() {
+        log.debug("Arrêt du Tracker");
+        scheduler.shutdownNow();
     }
 }
