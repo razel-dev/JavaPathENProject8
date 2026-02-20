@@ -69,11 +69,28 @@ public class User {
 		visitedLocations.clear();
 	}
 	
+	/**
+	 * Ajout d'une récompense utilisateur.
+	 *
+	 * Historique du correctif:
+	 * - Avant (bug test methode nearAllAttractions(): la condition de déduplication était erronée
+	 *   Ancienne implémentation:
+	 *	 // public void addUserReward(UserReward userReward) {
+	 *   //     if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+	 *   //         userRewards.add(userReward);
+	 *   //     }
+	 *   // }
+	 *
+	 * - Après : on autorise l'ajout d'UNE récompense par attraction, uniquement si
+	 *   l'utilisateur n'en a pas déjà une pour cette attraction (comparaison par nom).
+	 */
 	public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
-			userRewards.add(userReward);
-		}
-	}
+
+        if (userRewards.stream()
+                .noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
+            userRewards.add(userReward);
+        }
+    }
 	
 	public List<UserReward> getUserRewards() {
 		return userRewards;

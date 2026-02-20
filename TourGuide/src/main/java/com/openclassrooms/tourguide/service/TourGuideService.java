@@ -38,13 +38,19 @@ public class TourGuideService {
 
         if (testMode) {
             log.info("Mode de test activé");
+
             log.debug("Initialisation des utilisateurs de test");
             initializeInternalUsers();
             log.debug("Fin de l’initialisation des utilisateurs de test");
+        } else {
+            // par défaut en mode normal
+            rewardsService.setDefaultProximityBuffer();
         }
         tracker = new Tracker(this);
         log.debug("Démarrage du Tracker");
-        tracker.start();
+
+            tracker.start();
+
         addShutDownHook();
 
     }
