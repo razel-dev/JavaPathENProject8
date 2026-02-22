@@ -69,15 +69,16 @@ public class RewardsService {
 				.toList();
 	}
 	
-	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
-		return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
-	}
-	
-	private int getRewardPoints(Attraction attraction, User user) {
-		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
-	}
-	
-	public double getDistance(Location loc1, Location loc2) {
+    private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
+        return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
+    }
+    
+    // Passage en publique pour utilisation par le contrôleur
+    public int getRewardPoints(Attraction attraction, User user) {
+        return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+    }
+    
+    public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);
         double lon1 = Math.toRadians(loc1.longitude);
         double lat2 = Math.toRadians(loc2.latitude);
