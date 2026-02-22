@@ -1,6 +1,8 @@
 package com.openclassrooms.tourguide.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import gpsUtil.location.Attraction;
 import gpsUtil.location.VisitedLocation;
+import gpsUtil.location.Location;
 
 import com.openclassrooms.tourguide.service.TourGuideService;
 import com.openclassrooms.tourguide.user.User;
@@ -16,11 +19,16 @@ import com.openclassrooms.tourguide.user.UserReward;
 
 import tripPricer.Provider;
 
+import com.openclassrooms.tourguide.service.RewardsService;
+
 @RestController
 public class TourGuideController {
 
 	@Autowired
 	TourGuideService tourGuideService;
+	
+    @Autowired
+    RewardsService rewardsService;
 	
     @RequestMapping("/")
     public String index() {
@@ -31,20 +39,26 @@ public class TourGuideController {
     public VisitedLocation getLocation(@RequestParam String userName) {
     	return tourGuideService.getUserLocation(getUser(userName));
     }
+    
+       @RequestMapping("/getNearbyAttractions")
+    public List<Map<String, Object>> getNearbyAttractions(@RequestParam String userName) {
+        User user = getUser(userName);
+        VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);
+        Location userLoc = visitedLocation.location;
 
-    // - Fait: bascule en  publique RewardsService#getRewardPoints pour l'utiliser au niveau du contrôleur.
-    // - À faire: modifier cet endpoint pour ne plus retourner List<Attraction>, 
-    //   mais un JSON (sans DTO) contenant, pour les 5 attractions les plus proches:
-    //     * le nom de l’attraction,
-    //     * lat/long de l’attraction,
-    //     * lat/long de l’utilisateur,
-    //     * la distance en miles entre l’utilisateur et l’attraction,
-    //     * les points de récompense (via RewardsService#getRewardPoints).
-    //   La sélection des 5 plus proches s’appuiera sur RewardsService#getClosestAttractions.
-    @RequestMapping("/getNearbyAttractions") 
-    public List<Attraction> getNearbyAttractions(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-    	return tourGuideService.getNearByAttractions(visitedLocation);
+        return rewardsService.getClosestAttractions(userLoc, 5).stream()
+                .map(attraction -> {
+                    Map<String, Object> attractionMap = new LinkedHashMap<>();
+                    attractionMap.put("attractionName", attraction.attractionName);
+                    attractionMap.put("attractionLatitude", attraction.latitude);
+                    attractionMap.put("attractionLongitude", attraction.longitude);
+                    attractionMap.put("userLatitude", userLoc.latitude);
+                    attractionMap.put("userLongitude", userLoc.longitude);
+                    attractionMap.put("distanceMiles", rewardsService.getDistance(attraction, userLoc));
+                    attractionMap.put("rewardPoints", rewardsService.getRewardPoints(attraction, user));
+                    return attractionMap;
+                })
+                .toList();
     }
     
     @RequestMapping("/getRewards") 
@@ -61,5 +75,4 @@ public class TourGuideController {
     	return tourGuideService.getUser(userName);
     }
    
-
 }
