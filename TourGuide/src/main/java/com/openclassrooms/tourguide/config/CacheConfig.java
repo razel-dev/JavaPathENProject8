@@ -17,7 +17,7 @@ public class CacheConfig {
         manager.setCaffeine(
                 Caffeine.newBuilder()
                         .expireAfterWrite(1, TimeUnit.DAYS) // TTL 24h
-                        .maximumSize(200_000) // doublage des previsions journalieres et compatible avec ma RAM
+                        .maximumSize(100_000)
                         .recordStats()
         );
         manager.setCacheNames(List.of("rewardPoints"));
