@@ -7,6 +7,7 @@ import com.openclassrooms.tourguide.user.UserReward;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.IntStream;
 import org.springframework.stereotype.Service;
 import gpsUtil.GpsUtil;
@@ -16,8 +17,8 @@ import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 import lombok.extern.slf4j.Slf4j;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+// Ajout pour le parallélisme contrôlé
+
 
 @Service
 @Slf4j
@@ -42,14 +43,16 @@ public class TourGuideService {
             log.debug("Initialisation des utilisateurs de test");
             initializeInternalUsers();
             log.debug("Fin de l’initialisation des utilisateurs de test");
+
         } else {
-            // par défaut en mode normal
-            rewardsService.setDefaultProximityBuffer();
+
         }
         tracker = new Tracker(this);
         log.debug("Démarrage du Tracker");
 
+        if (!testMode) {
             tracker.start();
+        }
 
         addShutDownHook();
 
@@ -72,6 +75,26 @@ public class TourGuideService {
     public List<User> getAllUsers() {
         return new ArrayList<>(internalUserMap.values());
     }
+
+    // Exécute le calcul des récompenses pour tous les utilisateurs en parallèle
+    // 'parallelism' contrôle le nombre maximum de threads utilisés.
+    public void calculateAllRewardsInParallel(int parallelism) {
+        List<User> users = getAllUsers();
+
+        // Remplacement de parallelStream/ForkJoinPool: on utilise un ExecutorService dédié
+        // pour garantir l'utilisation de 'parallelism' threads (le commonPool n'est plus impliqué).
+       ExecutorService es = Executors.newFixedThreadPool(Math.max(1, parallelism));
+        try {
+           CompletableFuture.allOf(
+                    users.stream()
+                            .map(u -> CompletableFuture.runAsync(() -> rewardsService.calculateRewards(u), es))
+                            .toArray(CompletableFuture[]::new)
+            ).join();
+        } finally {
+            es.shutdown();
+        }
+    }
+
 
     public void addUser(User user) {
         if (!internalUserMap.containsKey(user.getUserName())) {
