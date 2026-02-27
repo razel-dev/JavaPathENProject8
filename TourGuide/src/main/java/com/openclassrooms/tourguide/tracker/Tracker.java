@@ -1,6 +1,8 @@
 package com.openclassrooms.tourguide.tracker;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -12,26 +14,42 @@ import com.openclassrooms.tourguide.user.User;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
-// Implémente Runnable : le scheduler gère la planification périodique.
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class Tracker implements Runnable {
 
-    // Intervalle entre deux cycles (en secondes), géré par le scheduler.
     private static final long TRACKING_POLLING_INTERVAL_SECONDS = TimeUnit.MINUTES.toSeconds(5);
-    // Planificateur à un seul thread pour l’exécution périodique.
+
+    // Scheduler pour la périodicité (1 thread suffit)
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    // Pool multi-threads pour paralléliser les utilisateurs pendant un cycle
+    private final ExecutorService workerPool = Executors.newFixedThreadPool(
+            Math.max(1, Runtime.getRuntime().availableProcessors()),
+            r -> {
+                Thread t = new Thread(r);
+                t.setName("tracker-worker-" + t.getId());
+                t.setDaemon(true);
+                return t;
+            });
+
     private final TourGuideService tourGuideService;
 
+    @PostConstruct
     public void start() {
         scheduler.scheduleWithFixedDelay(
-                this, // instance de runnable
+                this,
                 0,
                 TRACKING_POLLING_INTERVAL_SECONDS,
                 TimeUnit.SECONDS
         );
     }
+    
 
     @Override
     public void run() {
@@ -45,7 +63,11 @@ public class Tracker implements Runnable {
 
         StopWatch stopWatch = StopWatch.createStarted();
         try {
-            users.forEach(tourGuideService::trackUserLocation);
+            // Soumission en parallèle, attente de fin du cycle
+            CompletableFuture<?>[] futures = users.stream()
+                    .map(u -> CompletableFuture.runAsync(() -> tourGuideService.trackUserLocation(u), workerPool))
+                    .toArray(CompletableFuture[]::new);
+            CompletableFuture.allOf(futures).join();
         } finally {
             stopWatch.stop();
             log.debug("Temps écoulé du cycle du Tracker: {} secondes.",
@@ -53,11 +75,10 @@ public class Tracker implements Runnable {
         }
     }
 
-    /**
-     * Arrête proprement le scheduler du Tracker.
-     */
+    @PreDestroy
     public void stopTracking() {
         log.debug("Arrêt du Tracker");
         scheduler.shutdownNow();
+        workerPool.shutdownNow();
     }
 }
