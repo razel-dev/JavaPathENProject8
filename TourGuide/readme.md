@@ -23,3 +23,19 @@
     - Prometheus: [http://localhost:9090](http://localhost:9090)
     - Grafana: [http://localhost:3000](http://localhost:3000)
 
+## Intégration Continue (GitHub Actions)
+
+La CI s’exécute sur chaque push/PR vers la branche configurée et applique 3 étapes KISS:
+1) Compilation: `mvn clean compile -DskipTests=true`  
+2) Tests: `mvn test` (sans tests de performance)  
+3) Packaging: `mvn package -DskipTests=true`
+
+Artefacts disponibles après chaque run:
+- JAR de l’application: “app-jar”
+- Rapports de tests: “test-reports”
+
+Téléchargement:
+- GitHub → onglet “Actions” → sélectionner le run → section “Artifacts”.
+
+## Build local (comme en CI)
+
