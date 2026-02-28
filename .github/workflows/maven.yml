@@ -9,11 +9,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest   # Runner GitHub hébergé
-
+    defaults:
+      run:
+        working-directory: ./TourGuide
     steps:
       # Récupération du code
       - uses: actions/checkout@v4
-
+      
       # Installation de Java 17 + activation du cache Maven (~/.m2) pour accélérer
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -21,31 +23,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-
      
-      # Installe les libs internes présentes dans ./libs dans le repo Maven local du runner
+      # Installe les libs internes présentes dans ../libs dans le repo Maven local du runner
       # pour que Maven puisse les résoudre pendant le build.
-      # Cette étape ne s’exécute que si des fichiers existent sous libs/*.jar
+      # Cette étape ne s’exécute que si des fichiers existent sous ../libs/*.jar
       - name: Install internal libs to local Maven repo
-        if: ${{ hashFiles('libs/*.jar') != '' }}
+        if: ${{ hashFiles('../libs/*.jar') != '' }}
         run: |
-          # Adapte les coordonnées GAV à celles attendues dans ton pom.xml
-          [ -f libs/gpsUtil.jar ] && mvn -B -ntp install:install-file -Dfile=libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar || true
-          [ -f libs/RewardCentral.jar ] && mvn -B -ntp install:install-file -Dfile=libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=RewardCentral -Dversion=1.0.0 -Dpackaging=jar || true
-          [ -f libs/TripPricer.jar ] && mvn -B -ntp install:install-file -Dfile=libs/TripPricer.jar -DgroupId=tripPricer -DartifactId=TripPricer -Dversion=1.0.0 -Dpackaging=jar || true
-
+          [ -f ../libs/gpsUtil.jar ] && mvn -B -ntp install:install-file -Dfile=../libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar || true
+          [ -f ../libs/RewardCentral.jar ] && mvn -B -ntp install:install-file -Dfile=../libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=rewardCentral -Dversion=1.0.0 -Dpackaging=jar || true
+          [ -f ../libs/TripPricer.jar ] && mvn -B -ntp install:install-file -Dfile=../libs/TripPricer.jar -DgroupId=tripPricer -DartifactId=tripPricer -Dversion=1.0.0 -Dpackaging=jar || true
+    
       # 1) Compilation (sans exécuter les tests) — KISS
       - name: Compile
         run: mvn -B -ntp -DskipTests=true clean compile
-
+     
       # 2) Tests (unitaires/intégration si configurés) — pas de tests de perf ici
       - name: Test
         run: mvn -B -ntp test
-
+    
       # 3) Build des artefacts (JAR) sans relancer les tests
       - name: Package
         run: mvn -B -ntp -DskipTests=true package
-
+     
       # Téléverse le(s) JAR produit(s) dans target/ comme artefacts du run
       # permet le déploiement sans recompiler
       - name: Upload JAR
@@ -53,7 +53,7 @@ jobs:
         with:
           name: app-jar
           path: "**/target/*.jar"
-
+     
       # rapports de tests pour diagnostic
       - name: Upload test reports
         if: always()
@@ -63,7 +63,7 @@ jobs:
           path: |
             **/target/surefire-reports/**
             **/target/failsafe-reports/**
-
+      
       # (Optionnel) Soumission du graphe de dépendances pour de meilleures alertes de sécurité
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
