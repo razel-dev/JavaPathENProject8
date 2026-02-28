@@ -36,27 +36,13 @@ public class TestPerformance {
     @Autowired
     private TourGuideService tourGuideService;
 
-    /*
-     * Notes sur les tests de performance :
-     *
-     * - Le nombre d'utilisateurs générés pour les tests haut volume est configurable :
-     *   InternalTestHelper.setInternalUserNumber(100000);
-     *
-     * - Les métriques de performance attendues sont:
-     *   - highVolumeTrackLocation : 100 000 utilisateurs en ≤ 15 minutes
-     *   - highVolumeGetRewards : 100 000 utilisateurs en ≤ 20 minutes
-     *
-    /*
-     * Notes sur les tests de performance :
-     * - Les services sont injectés par Spring : les caches @Cacheable (Caffeine) sont opérationnels.
-     * - InternalTestHelper permet de piloter le volume d’utilisateurs pour les tests.
-     */
+
 
     @Test
     public void highVolumeTrackLocation() {
-        // Configuration du volume d'utilisateurs de test (peut être monté jusqu'à 100 000)
-        // Objectif: terminer en ≤ 15 minutes avec 100 000 utilisateurs
-        InternalTestHelper.setInternalUserNumber(100000);
+        // on ne modifie plus ici le nombre d'utilisateurs.
+        // Spring lit InternalTestHelper au démarrage du contexte (avant les tests).
+        // InternalTestHelper.setInternalUserNumber(100);
 
         // Récupération de tous les utilisateurs internes initialisés par le service
         List<User> allUsers = new ArrayList<>();
@@ -84,14 +70,16 @@ public class TestPerformance {
         assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
     }
 
+
+
     @Test
     public void highVolumeGetRewards() {
-        // Configuration du volume d'utilisateurs de test
-        // Objectif: terminer en ≤ 20 minutes avec 100 000 utilisateurs
-        InternalTestHelper.setInternalUserNumber(100_000);
+        // on ne modifie plus ici le nombre d'utilisateurs.
+        // Spring lit InternalTestHelper au démarrage du contexte (avant les tests).
+        // InternalTestHelper.setInternalUserNumber(100_000);
 
         // Trace du parallélisme vu par la JVM
-        System.out.println("CPUs visibles JVM (rewards) = " + Runtime.getRuntime().availableProcessors());
+        System.out.println("CPUs visibles JVM (rewards) = " + Runtime.getRuntime().availableProcessors()*4);
 
         // NOTE: Avant, demarrage du chronomètre avant new TourGuideService(...).
         // Maintenant, le service est injecté par Spring (déjà construit avant le test),
