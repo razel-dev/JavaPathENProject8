@@ -25,7 +25,7 @@ jobs:
           cache: maven
 
       - name: Install internal libs to local Maven repo
-        if: ${{ hashFiles('../libs/*.jar') != '' }}
+        if: ${{ hashFiles('libs/*.jar') != '' }}
         run: |
           [ -f ../libs/gpsUtil.jar ] && mvn -B -ntp install:install-file -Dfile=../libs/gpsUtil.jar -DgroupId=gpsUtil -DartifactId=gpsUtil -Dversion=1.0.0 -Dpackaging=jar || true
           [ -f ../libs/RewardCentral.jar ] && mvn -B -ntp install:install-file -Dfile=../libs/RewardCentral.jar -DgroupId=rewardCentral -DartifactId=rewardCentral -Dversion=1.0.0 -Dpackaging=jar || true
