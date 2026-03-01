@@ -8,7 +8,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest   # Runner GitHub hébergé
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     defaults:
       run:
         working-directory: ./TourGuide
@@ -61,8 +64,9 @@ jobs:
             **/target/surefire-reports/**
             **/target/failsafe-reports/**
       
-      # (Optionnel) Soumission du graphe de dépendances pour de meilleures alertes de sécurité
+      # (Optionnel) Soumission du graphe de dépendances
       - name: Update dependency graph
+        continue-on-error: true
         uses: advanced-security/maven-dependency-submission-action@v5
         with:
           directory: ./TourGuide
