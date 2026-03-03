@@ -2,9 +2,11 @@ package com.openclassrooms.tourguide.service;
 
 import java.util.*;
 
+// import lombok.Setter;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
-import org.springframework.cache.annotation.Cacheable;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
@@ -35,10 +37,13 @@ public class RewardsService {
     // Dépendances externes (GPS et calculateur de points)
     private final GpsUtil gpsUtil;
     private final RewardCentral rewardsCentral;
+    @Autowired
+    private RewardPointsService rewardPointsService;
 
     public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
         this.gpsUtil = gpsUtil;
         this.rewardsCentral = rewardCentral;
+        // rewardPointsService injecté par Spring via @Autowired
     }
 
     public void calculateRewards(User user) {
@@ -74,13 +79,6 @@ public class RewardsService {
         return getDistance(attraction, location) <= ATTRACTION_PROXIMITY_RANGE;
     }
 
-    // Renvoie les N attractions les plus proches depuis un point donné.
-    // Mise en cache:
-    // - Cache: "attractions"
-    // - Clé: "<lat>,<lon>:<limit>" (inclut la limite pour éviter les collisions)
-    // - unless: évite de stocker une liste vide
-    // - sync: un seul calcul concurrent si le cache est vide
-
     public List<Attraction> getClosestAttractions(Location from, int limit) {
         // Tri lisible via Comparator.comparingDouble
         return gpsUtil.getAttractions().stream()
@@ -94,16 +92,11 @@ public class RewardsService {
         return getDistance(attraction, visitedLocation.location) <= proximityBuffer;
     }
 
-    // Donne les points de récompense pour un couple (Attraction, Utilisateur).
-    // Mise en cache pour éviter d’appels redondants au service externe:
-    // - Cache: "rewardPoints"
-    // - Clé: "<attractionId>-<userId>"
-    // - sync: un seul calcul en cas de cache vide
-    @Cacheable(cacheNames = "rewardPoints",
-            key = "#attraction.attractionId.toString() + '-' + #user.userId.toString()",
-            sync = true,
-            cacheManager = "cacheManager")
+    // Délégation vers le service de points (cache), avec fallback RewardCentral si non injecté
     public int getRewardPoints(Attraction attraction, User user) {
+        if (rewardPointsService != null) {
+            return rewardPointsService.getRewardPoints(attraction, user);
+        }
         return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
     }
 
@@ -120,5 +113,4 @@ public class RewardsService {
         double nauticalMiles = 60 * Math.toDegrees(angle);
         return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
     }
-
 }
