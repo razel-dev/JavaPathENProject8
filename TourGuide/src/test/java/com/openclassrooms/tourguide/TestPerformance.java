@@ -48,9 +48,6 @@ public class TestPerformance {
         List<User> allUsers = new ArrayList<>();
         allUsers = tourGuideService.getAllUsers();
 
-        // Trace du parallélisme vu par la JVM
-        System.out.println("CPUs visibles JVM (tracking) = " + Runtime.getRuntime().availableProcessors()*4);
-
         // NOTE: Avant, tu démarrais le chronomètre avant new TourGuideService(...).
         // Maintenant, le service est injecté par Spring (déjà construit avant le test),
         // donc la mesure n’inclut plus le coût de construction du service.
@@ -72,14 +69,12 @@ public class TestPerformance {
 
 
 
+
     @Test
     public void highVolumeGetRewards() {
         // on ne modifie plus ici le nombre d'utilisateurs.
         // Spring lit InternalTestHelper au démarrage du contexte (avant les tests).
         // InternalTestHelper.setInternalUserNumber(100_000);
-
-        // Trace du parallélisme vu par la JVM
-        System.out.println("CPUs visibles JVM (rewards) = " + Runtime.getRuntime().availableProcessors()*4);
 
         // NOTE: Avant, demarrage du chronomètre avant new TourGuideService(...).
         // Maintenant, le service est injecté par Spring (déjà construit avant le test),
@@ -98,7 +93,10 @@ public class TestPerformance {
 
         // Calcul des récompenses en masse pour tous les utilisateurs
         int parallelism = Math.max(1, Runtime.getRuntime().availableProcessors()*4);
+        System.out.println("Parallelism choisi (rewards) = " + parallelism);
         tourGuideService.calculateAllRewardsInParallel(parallelism);
+        // Trace du parallélisme vu par la JVM
+        System.out.println("CPUs visibles JVM (rewards) = " + Runtime.getRuntime().availableProcessors());
 
         // Vérification fonctionnelle: chaque utilisateur doit avoir au moins 1 récompense
         for (User user : allUsers) {
