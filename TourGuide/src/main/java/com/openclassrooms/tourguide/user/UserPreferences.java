@@ -1,10 +1,12 @@
 package com.openclassrooms.tourguide.user;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class UserPreferences {
 
     private int attractionProximity = Integer.MAX_VALUE;
@@ -13,7 +15,5 @@ public class UserPreferences {
     private int numberOfAdults = 1;
     private int numberOfChildren = 0;
 
-    public UserPreferences() {
-    }
 
 }
