@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import gpsUtil.location.VisitedLocation;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import tripPricer.Provider;
+
 
 /**
  * Représente un utilisateur de l'application TourGuide.
@@ -18,23 +22,76 @@ import tripPricer.Provider;
  * Toute modification via ces listes modifiera directement l'objet {@code User}.
 
  */
+
+@Getter
 public class User {
+
 
     // Identité
     private final UUID userId;
+
     private final String userName;
 
+
     // Coordonnées
+    @Setter
     private String phoneNumber;
+    /**
+     * -- GETTER --
+     *  Retourne l'adresse e-mail.
+     * -- SETTER --
+     *  Met à jour l'adresse e-mail.
+     *
+     */
+    @Setter
     private String emailAddress;
 
+    /**
+     * -- GETTER --
+     *  Retourne l'horodatage de la dernière localisation.
+     * -- SETTER --
+     *  Définit l'horodatage de la dernière localisation.
+
+     */
     // Localisation
+    @Setter
     private Date latestLocationTimestamp;
 
+    /**
+     * -- GETTER --
+     *  Retourne la liste des visites enregistrées.
+     *  <p>La liste retournée est modifiable.</p>
+         */
     // Données métier
     private List<VisitedLocation> visitedLocations = new ArrayList<>();
+    /**
+     * -- GETTER --
+     *  Retourne la liste des récompenses.
+     *  <p>La liste retournée est modifiable.</p>
+
+     */
     private List<UserReward> userRewards = new ArrayList<>();
+    /**
+     * -- GETTER --
+     *  Retourne les préférences de l'utilisateur.
+
+     * -- SETTER --
+     *  Définit les préférences de l'utilisateur.
+
+     */
+    @Setter
     private UserPreferences userPreferences = new UserPreferences();
+    /**
+     * -- GETTER --
+     *  Retourne la liste des offres de voyage.
+     *  <p>La liste retournée est modifiable.</p>
+     *
+     *
+     * -- SETTER --
+     *  Définit la liste des offres de voyage.
+
+     */
+    @Setter
     private List<Provider> tripDeals = new ArrayList<>();
 
     /**
@@ -54,82 +111,10 @@ public class User {
     
     // --- Identité ---
 
-    /**
-     * Retourne l'identifiant unique de l'utilisateur.
-     *
-     * @return l'UUID de l'utilisateur
-     */
-    public UUID getUserId() {
-        return userId;
-    }
-    
-    /**
-     * Retourne le nom de l'utilisateur.
-     *
-     * @return le nom d'utilisateur
-     */
-    public String getUserName() {
-        return userName;
-    }
-    
     // --- Coordonnées ---
 
-    /**
-     * Met à jour le numéro de téléphone.
-     *
-     * @param phoneNumber le nouveau numéro de téléphone
-     */
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-    
-    /**
-     * Retourne le numéro de téléphone.
-     *
-     * @return le numéro de téléphone
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Met à jour l'adresse e-mail.
-     *
-     * @param emailAddress la nouvelle adresse e-mail
-     */
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-    
-    /**
-     * Retourne l'adresse e-mail.
-     *
-     * @return l'adresse e-mail
-     */
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-    
     // --- Localisation ---
 
-    /**
-     * Définit l'horodatage de la dernière localisation.
-     *
-     * @param latestLocationTimestamp la date/heure de la dernière localisation
-     */
-    public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
-        this.latestLocationTimestamp = latestLocationTimestamp;
-    }
-    
-    /**
-     * Retourne l'horodatage de la dernière localisation.
-     *
-     * @return la date/heure de la dernière localisation
-     */
-    public Date getLatestLocationTimestamp() {
-        return latestLocationTimestamp;
-    }
-    
     // --- Historique des visites ---
 
     /**
@@ -140,17 +125,7 @@ public class User {
     public void addToVisitedLocations(VisitedLocation visitedLocation) {
         visitedLocations.add(visitedLocation);
     }
-    
-    /**
-     * Retourne la liste des visites enregistrées.
-     * <p>La liste retournée est modifiable.</p>
-     *
-     * @return la liste des {@link VisitedLocation}
-     */
-    public List<VisitedLocation> getVisitedLocations() {
-        return visitedLocations;
-    }
-    
+
     /**
      * Vide l'historique des visites.
      */
@@ -182,56 +157,9 @@ public class User {
             userRewards.add(userReward);
         }
     }
-    
-    /**
-     * Retourne la liste des récompenses.
-     * <p>La liste retournée est modifiable.</p>
-     *
-     * @return la liste des {@link UserReward}
-     */
-    public List<UserReward> getUserRewards() {
-        return userRewards;
-    }
-    
+
     // --- Préférences ---
 
-    /**
-     * Retourne les préférences de l'utilisateur.
-     *
-     * @return l'objet {@link UserPreferences} courant
-     */
-    public UserPreferences getUserPreferences() {
-        return userPreferences;
-    }
-    
-    /**
-     * Définit les préférences de l'utilisateur.
-     *
-     * @param userPreferences les nouvelles préférences
-     */
-    public void setUserPreferences(UserPreferences userPreferences) {
-        this.userPreferences = userPreferences;
-    }
-    
     // --- Offres de voyage ---
-
-    /**
-     * Définit la liste des offres de voyage.
-     *
-     * @param tripDeals la liste de fournisseurs/offres
-     */
-    public void setTripDeals(List<Provider> tripDeals) {
-        this.tripDeals = tripDeals;
-    }
-    
-    /**
-     * Retourne la liste des offres de voyage.
-     * <p>La liste retournée est modifiable.</p>
-     *
-     * @return la liste des {@link Provider}
-     */
-    public List<Provider> getTripDeals() {
-        return tripDeals;
-    }
 
 }
