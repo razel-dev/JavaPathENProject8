@@ -53,7 +53,7 @@ public class TestPerformance {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        // Exécute un cycle complet du Tracker (parallélisé via son workerPool)
+        // Exécute un cycle complet du Tracker
         tracker.run(); // REMPLACE tourGuideService.tracker.run()
 
         // Arrêt du chrono (plus besoin d'arrêter manuellement le tracker: @PreDestroy s’en charge à la fin du contexte)
