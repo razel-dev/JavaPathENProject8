@@ -36,7 +36,7 @@ public class TourGuideService {
         Locale.setDefault(Locale.US);
 
         // Initialisation de test déplacée dans TestDataInitializer @Profile("test")
-        // if (testMode) {
+        // if (testMode){
         //     log.info("Mode de test activé");
         //     log.debug("Initialisation des utilisateurs de test");
         //     initializeInternalUsers();
@@ -67,8 +67,7 @@ public class TourGuideService {
     public void calculateAllRewardsInParallel(int parallelism) {
         List<User> users = getAllUsers();
 
-        // Remplacement de parallelStream/ForkJoinPool: on utilise un ExecutorService dédié
-        // pour garantir l'utilisation de 'parallelism' threads (le commonPool n'est plus impliqué).
+
        ExecutorService es = Executors.newFixedThreadPool(Math.max(1, parallelism));
         try {
            CompletableFuture.allOf(
@@ -124,6 +123,10 @@ public class TourGuideService {
 
     // Pour les tests, les utilisateurs internes sont stockés en mémoire
     private final ConcurrentMap<String, User> internalUserMap = new ConcurrentHashMap<>();
+
+    public void clearAllUsers() {
+        internalUserMap.clear();
+    }
 
     // Pour permettre l'appel depuis l'initialiseur @Profile("test")
     public void initializeInternalUsers() {
