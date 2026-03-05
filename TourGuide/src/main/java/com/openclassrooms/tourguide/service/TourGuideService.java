@@ -1,7 +1,7 @@
 package com.openclassrooms.tourguide.service;
 
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
-import com.openclassrooms.tourguide.tracker.Tracker;
+
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 import java.time.LocalDateTime;
@@ -27,9 +27,7 @@ public class TourGuideService {
     private final GpsUtil gpsUtil;
     private final RewardsService rewardsService;
     private final TripPricer tripPricer = new TripPricer();
-    public final Tracker tracker;
-    boolean testMode = true;
-
+    // boolean testMode = true; // SUPPRIMÉ
 
     public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
         this.gpsUtil = gpsUtil;
@@ -37,25 +35,13 @@ public class TourGuideService {
 
         Locale.setDefault(Locale.US);
 
-        if (testMode) {
-            log.info("Mode de test activé");
-
-            log.debug("Initialisation des utilisateurs de test");
-            initializeInternalUsers();
-            log.debug("Fin de l’initialisation des utilisateurs de test");
-
-        } else {
-
-        }
-        tracker = new Tracker(this);
-        log.debug("Démarrage du Tracker");
-
-        if (!testMode) {
-            tracker.start();
-        }
-
-        addShutDownHook();
-
+        // Initialisation de test déplacée dans TestDataInitializer @Profile("test")
+        // if (testMode) {
+        //     log.info("Mode de test activé");
+        //     log.debug("Initialisation des utilisateurs de test");
+        //     initializeInternalUsers();
+        //     log.debug("Fin de l’initialisation des utilisateurs de test");
+        // }
     }
 
     public List<UserReward> getUserRewards(User user) {
@@ -123,13 +109,10 @@ public class TourGuideService {
         return rewardsService.getClosestAttractions(visitedLocation.location, 5);
     }
 
-    private void addShutDownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
-    }
+   
 
     /**********************************************************************************
-     *
-     * Méthodes ci-dessous : pour les tests internes
+          * Méthodes ci-dessous : pour les tests internes
      *
      **********************************************************************************/
     private static final String TRIP_PRICER_API_KEY = "test-server-api-key";
@@ -142,7 +125,8 @@ public class TourGuideService {
     // Pour les tests, les utilisateurs internes sont stockés en mémoire
     private final ConcurrentMap<String, User> internalUserMap = new ConcurrentHashMap<>();
 
-    private void initializeInternalUsers() {
+    // Pour permettre l'appel depuis l'initialiseur @Profile("test")
+    public void initializeInternalUsers() {
         IntStream.range(0, InternalTestHelper.getInternalUserNumber()).forEach(i -> {
             String userName = "internalUser" + i;
             String phone = "000";
