@@ -72,7 +72,9 @@ jobs:
 
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
+        continue-on-error: true
         with:
           directory: ./TourGuide
           maven-args: "-ntp -DskipTests"
+          fail-on-error: false
 
