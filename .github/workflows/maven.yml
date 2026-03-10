@@ -1,4 +1,4 @@
-name: Java CI with Maven  # Nom du workflow visible dans l’onglet Actions
+name: Java CI with Maven
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       security-events: write
     defaults:
       run:
@@ -69,9 +69,10 @@ jobs:
           path: |
             **/target/surefire-reports/**
             **/target/failsafe-reports/**
-      
-      # (Optionnel) Soumission du graphe de dépendances
+
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
         with:
           directory: ./TourGuide
+          maven-args: "-ntp -DskipTests"
+
