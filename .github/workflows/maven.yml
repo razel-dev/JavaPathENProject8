@@ -2,7 +2,7 @@ name: Java CI with Maven  # Nom du workflow visible dans l’onglet Actions
 
 on:
   push:
-    branches: [ "master" ]   # Déclenche sur push vers master (adapte si besoin)
+    branches: [ "master" ]   # Déclenche sur push vers master
   pull_request:
     branches: [ "master" ]   # Déclenche sur PR visant master
 
@@ -38,7 +38,7 @@ jobs:
       - name: Compile
         run: mvn -B -ntp -DskipTests=true clean compile
      
-      # 2) Tests (unitaires/intégration si configurés) — pas de tests de perf ici
+      # 2) Tests (unitaires/intégration)
       - name: Test
         run: mvn -B -ntp test
     
@@ -66,7 +66,6 @@ jobs:
       
       # (Optionnel) Soumission du graphe de dépendances
       - name: Update dependency graph
-        continue-on-error: true
         uses: advanced-security/maven-dependency-submission-action@v5
         with:
           directory: ./TourGuide
